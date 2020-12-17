@@ -103,7 +103,7 @@ if args.intro:
         intro = f.read()
 
 templateLoader = jinja2.FileSystemLoader(searchpath="./")
-templateEnv = jinja2.Environment(loader=templateLoader)
+templateEnv = jinja2.Environment(loader=templateLoader, trim_blocks=True, lstrip_blocks=True)
 template = templateEnv.get_template(args.template)
 outputText = template.render(group=group, project=project,
                              build=build, environments=envs,

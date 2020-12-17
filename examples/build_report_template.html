@@ -26,6 +26,27 @@
                 height: 20px;
             }
 
+            .pass {
+                background-color: #FFFFFF; 
+            }
+
+            .fail {
+                background-color: #E04051;
+            }
+
+            .xfail {
+                background-color: #45B8E3;
+            }
+
+            .skip {
+                background-color: #DDDD0D;
+            }
+
+            .url {
+                color: blue;
+                text-decoration: underline;
+                cursor: pointer;
+            }
         </style>
     </head>
     <body>
@@ -117,7 +138,7 @@
                         <table class="table" border="1">
                             <tr>
                                 <th class="col-2">Test Suite</th>
-                                <th class="col-5 break-word">Test</th>
+                                <th class="col-5">Test</th>
                                 <th class="col-1">Result</th>
                             </tr>
                             {% for suite_name, results in env_results.items() %}
@@ -126,18 +147,12 @@
                                 </tr>
                                 {% for test in results %}
                                     {% if test.status  %}
-                                        {% set url = 'test/' + test.short_name + "/details/" %}
+                                        {% set func = 't' %}
                                     {% else %}
-                                        {% set url = 'metrics'  %}
+                                        {% set func = 'm' %}
                                     {% endif %}
-                                    <tr>
-                                        <td class="col-5 break-word">
-                                            <a href="{{ base_url + 'build/' + build.version + '/testrun/' + testruns[test.test_run]|string + '/suite/' + suite_name + '/' + url }}">{{ test.short_name }}</a>
-                                        </td>
-                                        <td style="background-color: {{ '#45B8E3' if test.status == 'xfail' else '#E04051' if test.status == 'fail' else '#DDDD0D' if test.status == 'skip' else '#FFFFFF' }}">
-                                            {{ test.status if test.status else test.result}}
-                                        </td>
-                                    </tr>
+                                    {# the line below is likely to repeat thousands of times, we're saving some precious bytes of storage #}
+<tr><td class="col-5 url" onclick="{{ func }}(test.test_run_id, test.suite_slug, this)">{{ test.short_name }}</td><td class="{{ test.status }}">{{ test.status if test.status else test.result}}</td></tr>
                                 {% endfor %}
                             {% endfor %}
                          </table>
@@ -146,4 +161,28 @@
             </div>
         </div>
     </body>
+    <script>
+        // Avoid creating <a> tags for tests, given that those are going
+        // to be thousands of thousands
+        function go_to(link) {
+            var url = "{{ base_url }}";
+            url += "{{ build.version }}/";
+            url += "testrun/"
+            url += testrun_id.toString() + '/'
+            url += 'suite/' + suite_slug + '/'
+            url += link
+
+            window.location = url;
+        }
+
+        function t(testrun_id, suite_slug, tag) {
+            test_name = td_tag.innerHTML;
+            link = 'test/' + test_name + '/details/'
+            go_to(testrun_id, suite_slug, link)
+        }
+
+        function m(testrun_id, suite_slug, tag) {
+            go_to(testrun_id, suite_slug, 'metrics/')
+        }
+    </script>
 </html>
